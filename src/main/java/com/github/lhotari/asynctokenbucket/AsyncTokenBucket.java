@@ -15,8 +15,9 @@ import java.util.function.LongSupplier;
  * 2. the "calculatePauseNanos" method is called to calculate the duration of a possible needed pause when
  * the tokens are fully consumed.
  *
- * This class doesn't have side effects, it's a pure function. It can be used as a building block for implementing
- * higher level asynchronous rate limiter implementations which do need side effects.
+ * This class doesn't have side effects, it's like a stateful function, just like a counter function is a stateful
+ * function. Indeed, it is just a sophisticated counter. It can be used as a building block for implementing higher
+ * level asynchronous rate limiter implementations which do need side effects.
  */
 public class AsyncTokenBucket {
     private static final long ONE_SECOND_NANOS = TimeUnit.SECONDS.toNanos(1);
