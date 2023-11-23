@@ -11,8 +11,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class AsyncTokenBucketTest {
-    private AtomicLong manualClockSource = new AtomicLong(TimeUnit.SECONDS.toNanos(100));
-    private LongSupplier clockSource = manualClockSource::get;
+    private final AtomicLong manualClockSource = new AtomicLong(TimeUnit.SECONDS.toNanos(100));
+    private final LongSupplier clockSource = manualClockSource::get;
 
     private AsyncTokenBucket asyncTokenBucket;
 
@@ -32,8 +32,18 @@ class AsyncTokenBucketTest {
         assertEquals(50, asyncTokenBucket.tokens(true));
         incrementSeconds(1);
         assertEquals(60, asyncTokenBucket.tokens(true));
-        incrementSeconds(10);
+        incrementSeconds(4);
         assertEquals(100, asyncTokenBucket.tokens(true));
+
+        // No matter how long the period is, tokens do not go above capacity
+        incrementSeconds(5);
+        assertEquals(100, asyncTokenBucket.tokens(true));
+
+        // Consume all and verify none available and then wait 1 period and check replenished
+        asyncTokenBucket.consumeTokens(100);
+        assertEquals(0, asyncTokenBucket.tokens(true));
+        incrementSeconds(1);
+        assertEquals(10, asyncTokenBucket.tokens(true));
     }
 
     @Test
@@ -100,10 +110,10 @@ class AsyncTokenBucketTest {
     }
 
     private void waitUntilBucketIsFull() throws InterruptedException {
-        pause(asyncTokenBucket, asyncTokenBucket.getCapacity(), true);
+        pause(asyncTokenBucket, asyncTokenBucket.getCapacity());
     }
 
-    private static void pause(AsyncTokenBucket asyncTokenBucket, long minTokens, boolean forceUpdateTokens) throws InterruptedException {
+    private static void pause(AsyncTokenBucket asyncTokenBucket, long minTokens) throws InterruptedException {
         long pauseMillis = TimeUnit.NANOSECONDS.toMillis(asyncTokenBucket.calculatePauseNanos(minTokens, true));
         if (pauseMillis > 0) {
             Thread.sleep(pauseMillis);
