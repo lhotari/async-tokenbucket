@@ -18,7 +18,6 @@ class AsyncTokenBucketTest {
 
     private void incrementSeconds(int seconds) {
         manualClockSource.addAndGet(TimeUnit.SECONDS.toNanos(seconds));
-        asyncTokenBucket.updateTokens();
     }
 
     private void incrementMillis(long millis) {
@@ -27,50 +26,55 @@ class AsyncTokenBucketTest {
 
     @Test
     void shouldAddTokensWithConfiguredRate() {
-        asyncTokenBucket = new AsyncTokenBucket(100, 10, clockSource);
+        asyncTokenBucket =
+                AsyncTokenBucket.builder().capacity(100).rate(10).initialTokens(0).clockSource(clockSource).build();
         incrementSeconds(5);
-        assertEquals(50, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 50);
         incrementSeconds(1);
-        assertEquals(60, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 60);
         incrementSeconds(4);
-        assertEquals(100, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 100);
 
         // No matter how long the period is, tokens do not go above capacity
         incrementSeconds(5);
-        assertEquals(100, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 100);
 
         // Consume all and verify none available and then wait 1 period and check replenished
         asyncTokenBucket.consumeTokens(100);
-        assertEquals(0, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.tokens(true), 0);
         incrementSeconds(1);
-        assertEquals(10, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 10);
     }
 
     @Test
     void shouldCalculatePauseCorrectly() {
-        asyncTokenBucket = new AsyncTokenBucket(100, 10, clockSource);
+        asyncTokenBucket =
+                AsyncTokenBucket.builder().capacity(100).rate(10).initialTokens(0).clockSource(clockSource)
+                        .build();
         incrementSeconds(5);
         asyncTokenBucket.consumeTokens(100);
-        assertEquals(-50, asyncTokenBucket.tokens(true));
-        assertEquals(6, TimeUnit.NANOSECONDS.toSeconds(asyncTokenBucket.calculatePauseNanos(10, true)));
+        assertEquals(asyncTokenBucket.getTokens(), -50);
+        assertEquals(TimeUnit.NANOSECONDS.toMillis(asyncTokenBucket.calculateThrottlingDuration()), 5100);
     }
 
     @Test
     void shouldSupportFractionsWhenUpdatingTokens() {
-        asyncTokenBucket = new AsyncTokenBucket(100, 10, clockSource);
+        asyncTokenBucket =
+                AsyncTokenBucket.builder().capacity(100).rate(10).initialTokens(0).clockSource(clockSource).build();
         incrementMillis(100);
-        assertEquals(1, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 1);
     }
 
     @Test
     void shouldSupportFractionsAndRetainLeftoverWhenUpdatingTokens() {
-        asyncTokenBucket = new AsyncTokenBucket(100, 10, clockSource);
+        asyncTokenBucket =
+                AsyncTokenBucket.builder().capacity(100).rate(10).initialTokens(0).clockSource(clockSource).build();
         for (int i = 0; i < 150; i++) {
             incrementMillis(1);
         }
-        assertEquals(1, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 1);
         incrementMillis(150);
-        assertEquals(3, asyncTokenBucket.tokens(true));
+        assertEquals(asyncTokenBucket.getTokens(), 3);
     }
 
     @Tag("performance")
@@ -79,10 +83,13 @@ class AsyncTokenBucketTest {
     void shouldPerformanceOfConsumeTokensBeSufficient(int numberOfThreads) throws InterruptedException {
         long ratePerSecond = 100_000_000;
         int durationSeconds = 10;
-        asyncTokenBucket = new AsyncTokenBucket(2 * ratePerSecond, ratePerSecond, System::nanoTime);
         Thread[] threads = new Thread[numberOfThreads];
         for (int i = 0; i < 2; i++) {
-            waitUntilBucketIsFull();
+            asyncTokenBucket = AsyncTokenBucket.builder()
+                    .rate(ratePerSecond)
+                    .initialTokens(2 * ratePerSecond)
+                    .capacity(2 * ratePerSecond)
+                    .build();
             long startNanos = System.nanoTime();
             long endNanos = startNanos + TimeUnit.SECONDS.toNanos(durationSeconds);
             AtomicLong totalCounter = new AtomicLong();
@@ -104,20 +111,9 @@ class AsyncTokenBucketTest {
             }
             long totalCount = totalCounter.get();
             System.out.println("Counter value " + totalCount + " tokens:" + asyncTokenBucket.tokens(true));
-            System.out.printf(Locale.US, "Achieved rate: %,d ops per second with %d threads%n", totalCount / durationSeconds,
+            System.out.printf(Locale.US, "Achieved rate: %,d ops per second with %d threads%n",
+                    totalCount / durationSeconds,
                     numberOfThreads);
         }
     }
-
-    private void waitUntilBucketIsFull() throws InterruptedException {
-        pause(asyncTokenBucket, asyncTokenBucket.getCapacity());
-    }
-
-    private static void pause(AsyncTokenBucket asyncTokenBucket, long minTokens) throws InterruptedException {
-        long pauseMillis = TimeUnit.NANOSECONDS.toMillis(asyncTokenBucket.calculatePauseNanos(minTokens, true));
-        if (pauseMillis > 0) {
-            Thread.sleep(pauseMillis);
-        }
-    }
-
 }
