@@ -11,8 +11,7 @@ use. There is no synchronization or blocking. CAS (compare-and-swap) operations 
 fields are used to minimize contention when using CAS fields. The JVM's LongAdder class is used in the hot path to 
 hold the sum of consumed tokens.
 
-The performance of the token bucket calculations exceeds over 10M operations per second per core tested on a developer
-laptop. This proves that the overhead of the token bucket is well suited for Apache Pulsar's rate limiter use cases. 
+The performance of the token bucket calculations exceeds over 20M operations per second on a single thread tested on a developer laptop. With 100 threads, the throughput was about 240M ops/s. This proves that the overhead of the token bucket is well suited for Apache Pulsar's rate limiter use cases.
 
 ### Main usage flow of the AsyncTokenBucket class
 
