@@ -42,34 +42,34 @@ example output:
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 125128028 tokens:199941612
-    Achieved rate: 12,512,802 ops per second with 1 threads
+    Counter value 235871897 tokens:199807416
+    Achieved rate: 23,587,189 ops per second with 1 threads
     Consuming for 10 seconds...
-    Counter value 126059043 tokens:199920507
-    Achieved rate: 12,605,904 ops per second with 1 threads
+    Counter value 247271385 tokens:199828871
+    Achieved rate: 24,727,138 ops per second with 1 threads
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 PASSED
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 1150055476 tokens:45309290
-    Achieved rate: 115,005,547 ops per second with 10 threads
+    Counter value 1913229472 tokens:-716253506
+    Achieved rate: 191,322,947 ops per second with 10 threads
     Consuming for 10 seconds...
-    Counter value 1152924215 tokens:45692611
-    Achieved rate: 115,292,421 ops per second with 10 threads
+    Counter value 1852105604 tokens:-653720507
+    Achieved rate: 185,210,560 ops per second with 10 threads
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 PASSED
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 1650149177 tokens:-451095706
-    Achieved rate: 165,014,917 ops per second with 100 threads
+    Counter value 2491281782 tokens:-1292454774
+    Achieved rate: 249,128,178 ops per second with 100 threads
     Consuming for 10 seconds...
-    Counter value 1664288687 tokens:-462912837
-    Achieved rate: 166,428,868 ops per second with 100 threads
+    Counter value 2392603274 tokens:-1193641232
+    Achieved rate: 239,260,327 ops per second with 100 threads
 
 AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 PASSED
 
-BUILD SUCCESSFUL in 1m 15s
-3 actionable tasks: 3 executed
+BUILD SUCCESSFUL in 1m
+3 actionable tasks: 1 executed, 2 up-to-date
 ```
