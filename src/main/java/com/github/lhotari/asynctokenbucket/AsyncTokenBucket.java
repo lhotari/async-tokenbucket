@@ -21,7 +21,8 @@ import java.util.function.LongSupplier;
 public abstract class AsyncTokenBucket {
     public static final LongSupplier DEFAULT_CLOCK_SOURCE = System::nanoTime;
     private static final long ONE_SECOND_NANOS = TimeUnit.SECONDS.toNanos(1);
-    private static final long DEFAULT_RESOLUTION_NANOS = TimeUnit.MILLISECONDS.toNanos(10);
+    // 2^24 nanoseconds is 16 milliseconds
+    private static final long DEFAULT_RESOLUTION_NANOS = TimeUnit.MILLISECONDS.toNanos(16);
 
     // The default resolution is 10 milliseconds. This means that the consumed tokens are subtracted from the
     // current amount of tokens about every 10 milliseconds. This solution helps prevent a CAS loop what could cause
