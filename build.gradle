@@ -61,6 +61,10 @@ jmh {
     if (project.hasProperty("jfrProfiling")) {
         profilers = ["jfr:dir=${project.file("build/reports/jmh")};configName=profile"]
     } else if (project.hasProperty("asyncProfiling")) {
+        // https://github.com/async-profiler/async-profiler#basic-usage
+        // On Linux, you also need to execute
+        // sudo sysctl kernel.perf_event_paranoid=1
+        // sudo sysctl kernel.kptr_restrict=0
         profilers = ["async:libPath=${project.file("lib/async-profiler/${osdetector.os}/libasyncProfiler.so")};event=cpu;output=flamegraph;dir=${project.file("build/reports/jmh")}"]
     }
 }
