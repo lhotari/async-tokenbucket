@@ -10,30 +10,37 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    performanceTest
+}
+
+configurations {
+    performanceTestImplementation.extendsFrom(testImplementation)
+}
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.1')
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    performanceTestImplementation project(':')
 }
 
 test {
-    useJUnitPlatform {
-        excludeTags 'performance'
-    }
     outputs.upToDateWhen { false }
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
 }
 
-task performanceTest(type: Test) {
-    testClassesDirs = testing.suites.test.sources.output.classesDirs
-    classpath = testing.suites.test.sources.runtimeClasspath
-    useJUnitPlatform {
-        includeTags 'performance'
-    }
+def performanceTest = tasks.register("performanceTest", Test) {
+    testClassesDirs = sourceSets.performanceTest.output.classesDirs
+    classpath = sourceSets.performanceTest.runtimeClasspath
     outputs.upToDateWhen { false }
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
