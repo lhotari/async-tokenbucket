@@ -31,24 +31,24 @@ public class AsyncTokenBucketBenchmark {
 
     @Threads(1)
     @Benchmark
-    @Measurement(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
-    @Warmup(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Measurement(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Warmup(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
     public void consumeTokensBenchmark001Threads() {
         asyncTokenBucket.consumeTokens(1);
     }
 
     @Threads(10)
     @Benchmark
-    @Measurement(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
-    @Warmup(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Measurement(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Warmup(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
     public void consumeTokensBenchmark010Threads() {
         asyncTokenBucket.consumeTokens(1);
     }
 
     @Threads(100)
     @Benchmark
-    @Measurement(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
-    @Warmup(time = 1, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Measurement(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
+    @Warmup(time = 10, timeUnit = TimeUnit.SECONDS, iterations = 1)
     public void consumeTokensBenchmark100Threads() {
         asyncTokenBucket.consumeTokens(1);
     }
