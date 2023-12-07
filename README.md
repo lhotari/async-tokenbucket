@@ -16,7 +16,8 @@ The performance of the token bucket calculations exceeds over 20M operations per
 ### Main usage flow of the AsyncTokenBucket class
 
 source code: [`AsyncTokenBucket.java`](src/main/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucket.java)\
-unit test: [`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java) 
+unit test: [`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java)\
+performance test: [`AsyncTokenBucketPerformanceTest.java`](src/performanceTest/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketPerformanceTest.java)
 
 1. tokens are consumed by calling the `consumeTokens` method.
 2. the `calculateThrottlingDuration` method is called to calculate the duration of a possible needed pause when the tokens are fully consumed.
