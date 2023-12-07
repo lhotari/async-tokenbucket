@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "me.champeau.jmh" version "0.7.2"
+    id "io.morethan.jmhreport" version "0.9.0"
     id 'org.graalvm.buildtools.native' version '0.9.28'
 }
 
@@ -51,4 +52,14 @@ graalvmNative {
         usingSourceSet(sourceSets.performanceTest)
         forTestTask(performanceTest)
     }
+}
+
+jmh {
+    resultsFile = layout.buildDirectory.file("reports/jmh/results.json")
+    resultFormat = "json"
+}
+
+jmhReport {
+    jmhResultPath = project.file("build/reports/jmh/results.json")
+    jmhReportOutput = project.file("build/reports/jmh")
 }
