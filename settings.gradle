@@ -1,2 +1,8 @@
-rootProject.name = 'async-tokenbucket'
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 
+rootProject.name = 'async-tokenbucket'

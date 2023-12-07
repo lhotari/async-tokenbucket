@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "me.champeau.jmh" version "0.7.2"
+    id 'org.graalvm.buildtools.native' version '0.9.28'
 }
 
 group = 'com.github.lhotari'
@@ -43,4 +44,11 @@ def performanceTest = tasks.register("performanceTest", Test) {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
+}
+
+graalvmNative {
+    registerTestBinary("performanceTest") {
+        usingSourceSet(sourceSets.performanceTest)
+        forTestTask(performanceTest)
+    }
 }
