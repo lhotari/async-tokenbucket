@@ -78,40 +78,69 @@ BUILD SUCCESSFUL in 1m
 On Apple M2/M3 hardware, the performance results are significantly lower. Here's an example output from a Mac with Apple M3 Max CPU:
 
 ```
-❯ ./gradlew perfTest
+❯ ./gradlew performanceTest
 
 > Task :performanceTest
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 473957904 tokens:199520646
-    Achieved rate: 47,395,790 ops per second with 1 threads
+    Counter value 463170669 tokens:199401129
+    Achieved rate: 46,317,066 ops per second with 1 threads
     Consuming for 10 seconds...
-    Counter value 468914203 tokens:199565165
-    Achieved rate: 46,891,420 ops per second with 1 threads
+    Counter value 463248753 tokens:199290547
+    Achieved rate: 46,324,875 ops per second with 1 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 PASSED
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 PASSED
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 114469181 tokens:199914196
-    Achieved rate: 11,446,918 ops per second with 10 threads
+    Counter value 116056013 tokens:199912361
+    Achieved rate: 11,605,601 ops per second with 10 threads
     Consuming for 10 seconds...
-    Counter value 114607110 tokens:199943583
-    Achieved rate: 11,460,711 ops per second with 10 threads
+    Counter value 116230314 tokens:199909024
+    Achieved rate: 11,623,031 ops per second with 10 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 PASSED
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 PASSED
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 89685072 tokens:199970615
-    Achieved rate: 8,968,507 ops per second with 100 threads
+    Counter value 90589397 tokens:199913442
+    Achieved rate: 9,058,939 ops per second with 100 threads
     Consuming for 10 seconds...
-    Counter value 90290933 tokens:199967779
-    Achieved rate: 9,029,093 ops per second with 100 threads
+    Counter value 90459274 tokens:199908562
+    Achieved rate: 9,045,927 ops per second with 100 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 PASSED
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 PASSED
+```
 
-BUILD SUCCESSFUL in 1m
-3 actionable tasks: 1 executed, 2 up-to-date
+The throughput is about 3x with GraalVM 21.0.1 native image on the same hardware:
+
+```
+> Task :nativePerformanceTest
+JUnit Platform on Native Image - report
+----------------------------------------
+
+Consuming for 10 seconds...
+Counter value 413797238 tokens:199610232
+Achieved rate: 41,379,723 ops per second with 1 threads
+Consuming for 10 seconds...
+Counter value 460472930 tokens:199481644
+Achieved rate: 46,047,293 ops per second with 1 threads
+Consuming for 10 seconds...
+Counter value 262045629 tokens:199870668
+Achieved rate: 26,204,562 ops per second with 10 threads
+Consuming for 10 seconds...
+Counter value 264312328 tokens:199868059
+Achieved rate: 26,431,232 ops per second with 10 threads
+Consuming for 10 seconds...
+Counter value 270598198 tokens:199857211
+Achieved rate: 27,059,819 ops per second with 100 threads
+Consuming for 10 seconds...
+Counter value 270151795 tokens:199847535
+Achieved rate: 27,015,179 ops per second with 100 threads
+com.github.lhotari.asynctokenbucket.AsyncTokenBucketPerformanceTest > [1] 1 SUCCESSFUL
+
+com.github.lhotari.asynctokenbucket.AsyncTokenBucketPerformanceTest > [2] 10 SUCCESSFUL
+
+com.github.lhotari.asynctokenbucket.AsyncTokenBucketPerformanceTest > [3] 100 SUCCESSFUL
 ```
