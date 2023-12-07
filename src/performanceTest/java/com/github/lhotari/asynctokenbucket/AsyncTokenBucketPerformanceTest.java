@@ -3,14 +3,12 @@ package com.github.lhotari.asynctokenbucket;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class AsyncTokenBucketPerformanceTest {
     private AsyncTokenBucket asyncTokenBucket;
 
-    @Tag("performance")
     @ParameterizedTest
     @ValueSource(ints = {1, 10, 100})
     void shouldPerformanceOfConsumeTokensBeSufficient(int numberOfThreads) throws InterruptedException {
