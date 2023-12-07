@@ -57,8 +57,11 @@ graalvmNative {
 jmh {
     resultsFile = layout.buildDirectory.file("reports/jmh/results.json")
     resultFormat = "json"
-    //profilers = ["async:libPath=/Users/lari/tools/async-profiler-2.9-macos/build/libasyncProfiler.so;event=cpu;output=flamegraph;dir=${project.file("build/reports/jmh")}"]
-    //profilers = ["jfr:dir=${project.file("build/reports/jmh")};configName=profile"]
+    if (project.hasProperty("jfrProfiling")) {
+        profilers = ["jfr:dir=${project.file("build/reports/jmh")};configName=profile"]
+    } else if (project.hasProperty("asyncProfiling")) {
+        profilers = ["async:libPath=/Users/lari/tools/async-profiler-2.9-macos/build/libasyncProfiler.so;event=cpu;output=flamegraph;dir=${project.file("build/reports/jmh")}"]
+    }
 }
 
 jmhReport {
