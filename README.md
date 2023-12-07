@@ -19,7 +19,7 @@ source code: [`AsyncTokenBucket.java`](src/main/java/com/github/lhotari/asynctok
 unit test: [`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java) 
 
 1. tokens are consumed by calling the `consumeTokens` method.
-2. the `calculatePauseNanos` method is called to calculate the duration of a possible needed pause when the tokens are fully consumed.
+2. the `calculateThrottlingDuration` method is called to calculate the duration of a possible needed pause when the tokens are fully consumed.
 
 The `AsyncTokenBucket` class doesn't have side effects, it's like a stateful function, just like a counter function is a stateful function.
 Indeed, it is just a sophisticated counter. It can be used as a building block for implementing higher level asynchronous rate limiter 
