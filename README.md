@@ -39,38 +39,35 @@ example output:
 
 > Task :performanceTest
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 235871897 tokens:199807416
-    Achieved rate: 23,587,189 ops per second with 1 threads
+    Counter value 242885402 tokens:199906063
+    Achieved rate: 24,288,540 ops per second with 1 threads
     Consuming for 10 seconds...
-    Counter value 247271385 tokens:199828871
-    Achieved rate: 24,727,138 ops per second with 1 threads
+    Counter value 233032728 tokens:199797294
+    Achieved rate: 23,303,272 ops per second with 1 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 PASSED
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [1] 1 PASSED
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 1913229472 tokens:-716253506
-    Achieved rate: 191,322,947 ops per second with 10 threads
+    Counter value 1859380530 tokens:-669249705
+    Achieved rate: 185,938,053 ops per second with 10 threads
     Consuming for 10 seconds...
-    Counter value 1852105604 tokens:-653720507
-    Achieved rate: 185,210,560 ops per second with 10 threads
+    Counter value 1851200123 tokens:-652321610
+    Achieved rate: 185,120,012 ops per second with 10 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 PASSED
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [2] 10 PASSED
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 STANDARD_OUT
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 STANDARD_OUT
     Consuming for 10 seconds...
-    Counter value 2491281782 tokens:-1292454774
-    Achieved rate: 249,128,178 ops per second with 100 threads
+    Counter value 2419541599 tokens:-1220363322
+    Achieved rate: 241,954,159 ops per second with 100 threads
     Consuming for 10 seconds...
-    Counter value 2392603274 tokens:-1193641232
-    Achieved rate: 239,260,327 ops per second with 100 threads
+    Counter value 2327767683 tokens:-1128965391
+    Achieved rate: 232,776,768 ops per second with 100 threads
 
-AsyncTokenBucketTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 PASSED
-
-BUILD SUCCESSFUL in 1m
-3 actionable tasks: 1 executed, 2 up-to-date
+AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(int) > [3] 100 PASSED
 ```
 
 #### Known issue: performance on Apple M2/M3 hardware is significantly lower than on Intel 64-bit hardware
