@@ -12,7 +12,7 @@ import java.util.function.LongSupplier;
  * It is eventually consistent, meaning that the tokens are not updated on every call to the "consumeTokens" method.
  * <p>Main usage flow:
  * 1. tokens are consumed by calling the "consumeTokens" method.
- * 2. the "calculatePause" method is called to calculate the duration of a possible needed pause when the tokens
+ * 2. the "calculateThrottlingDuration" method is called to calculate the duration of a possible needed pause when the tokens
  * are fully consumed.
  * <p>This class does not produce side effects outside of its own scope. It functions similarly to a stateful function,
  * akin to a counter function. In essence, it is a sophisticated counter. It can serve as a foundational component for
