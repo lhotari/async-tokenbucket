@@ -3,6 +3,7 @@ plugins {
     id "me.champeau.jmh" version "0.7.2"
     id "io.morethan.jmhreport" version "0.9.0"
     id 'org.graalvm.buildtools.native' version '0.9.28'
+    id "com.google.osdetector" version "1.7.3"
 }
 
 group = 'com.github.lhotari'
@@ -60,7 +61,7 @@ jmh {
     if (project.hasProperty("jfrProfiling")) {
         profilers = ["jfr:dir=${project.file("build/reports/jmh")};configName=profile"]
     } else if (project.hasProperty("asyncProfiling")) {
-        profilers = ["async:libPath=/Users/lari/tools/async-profiler-2.9-macos/build/libasyncProfiler.so;event=cpu;output=flamegraph;dir=${project.file("build/reports/jmh")}"]
+        profilers = ["async:libPath=${project.file("lib/async-profiler/${osdetector.os}/libasyncProfiler.so")};event=cpu;output=flamegraph;dir=${project.file("build/reports/jmh")}"]
     }
 }
 
