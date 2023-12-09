@@ -3,7 +3,6 @@ package com.github.lhotari.asynctokenbucket;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.LongSupplier;
 import org.junit.jupiter.api.Test;
 
 class AsyncTokenBucketTest {
