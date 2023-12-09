@@ -19,7 +19,7 @@ import java.util.function.LongSupplier;
  * constructing higher-level asynchronous rate limiter implementations, which require side effects for throttling.
  */
 public abstract class AsyncTokenBucket {
-    public static final LongSupplier DEFAULT_CLOCK_SOURCE = System::nanoTime;
+    public static final MonotonicClockSource DEFAULT_CLOCK_SOURCE = consistentView -> System.nanoTime();
     private static final long ONE_SECOND_NANOS = TimeUnit.SECONDS.toNanos(1);
     // 2^24 nanoseconds is 16 milliseconds
     private static final long DEFAULT_RESOLUTION_NANOS = TimeUnit.MILLISECONDS.toNanos(16);
@@ -82,7 +82,7 @@ public abstract class AsyncTokenBucket {
     /**
      * This field is used to obtain the current time in nanoseconds. By default, a monotonic clock is used.
      */
-    private final LongSupplier clockSource;
+    private final MonotonicClockSource clockSource;
     /**
      * This field is used to hold the sum of consumed tokens that are pending to be subtracted from the total amount of
      * tokens. This solution is to prevent CAS loop contention problem. pendingConsumedTokens used JVM's LongAdder
@@ -100,8 +100,8 @@ public abstract class AsyncTokenBucket {
         private final long ratePeriodNanos;
         private final long targetAmountOfTokensAfterThrottling;
 
-        protected FinalRateAsyncTokenBucket(long capacity, long rate, LongSupplier clockSource, long ratePeriodNanos,
-                                            long resolutionNanos, long initialTokens) {
+        protected FinalRateAsyncTokenBucket(long capacity, long rate, MonotonicClockSource clockSource,
+                                            long ratePeriodNanos, long resolutionNanos, long initialTokens) {
             super(clockSource, resolutionNanos);
             this.capacity = capacity;
             this.rate = rate;
@@ -133,7 +133,7 @@ public abstract class AsyncTokenBucket {
         }
     }
 
-    protected AsyncTokenBucket(LongSupplier clockSource, long resolutionNanos) {
+    protected AsyncTokenBucket(MonotonicClockSource clockSource, long resolutionNanos) {
         this.clockSource = clockSource;
         this.resolutionNanos = resolutionNanos;
     }
@@ -158,7 +158,7 @@ public abstract class AsyncTokenBucket {
         if (consumeTokens < 0) {
             throw new IllegalArgumentException("consumeTokens must be >= 0");
         }
-        long currentNanos = clockSource.getAsLong();
+        long currentNanos = clockSource.getNanos(forceUpdateTokens);
         long currentIncrement = resolutionNanos != 0 ? currentNanos / resolutionNanos : 0;
         long currentLastIncrement = lastIncrement;
         if (forceUpdateTokens || currentIncrement == 0 || (currentIncrement > currentLastIncrement
@@ -233,7 +233,7 @@ public abstract class AsyncTokenBucket {
 
     // CHECKSTYLE.OFF: ClassTypeParameterName
     public abstract static class AsyncTokenBucketBuilder<SELF extends AsyncTokenBucketBuilder<SELF>> {
-        protected LongSupplier clockSource = DEFAULT_CLOCK_SOURCE;
+        protected MonotonicClockSource clockSource = DEFAULT_CLOCK_SOURCE;
         protected long resolutionNanos = defaultResolutionNanos;
 
         protected AsyncTokenBucketBuilder() {
@@ -243,7 +243,7 @@ public abstract class AsyncTokenBucket {
             return (SELF) this;
         }
 
-        public SELF clockSource(LongSupplier clockSource) {
+        public SELF clockSource(MonotonicClockSource clockSource) {
             this.clockSource = clockSource;
             return self();
         }
@@ -310,7 +310,7 @@ public abstract class AsyncTokenBucket {
         private final double targetFillFactorAfterThrottling;
 
         protected DynamicRateAsyncTokenBucket(double capacityFactor, LongSupplier rateFunction,
-                                              LongSupplier clockSource, LongSupplier ratePeriodNanosFunction,
+                                              MonotonicClockSource clockSource, LongSupplier ratePeriodNanosFunction,
                                               long resolutionNanos, double initialTokensFactor,
                                               double targetFillFactorAfterThrottling) {
             super(clockSource, resolutionNanos);
@@ -390,6 +390,52 @@ public abstract class AsyncTokenBucket {
                     this.ratePeriodNanosFunction, this.resolutionNanos,
                     this.initialFillFactor,
                     targetFillFactorAfterThrottling);
+        }
+    }
+
+    public interface MonotonicClockSource {
+        long getNanos(boolean consistentView);
+    }
+
+    public static class GranularMonotonicClockSource implements MonotonicClockSource, AutoCloseable {
+        private final long sleepMillis;
+        private final int sleepNanos;
+        private final LongSupplier clockSource;
+        private volatile long lastNanos;
+        private volatile boolean closed;
+
+        public GranularMonotonicClockSource(long granularityNanos, LongSupplier clockSource) {
+            this.sleepMillis = TimeUnit.NANOSECONDS.toMillis(granularityNanos);
+            this.sleepNanos = (int) (granularityNanos - TimeUnit.MILLISECONDS.toNanos(sleepMillis));
+            this.clockSource = clockSource;
+            Thread thread = new Thread(this::updateLoop, "AsyncTokenBucket-DefaultMonotonicClockSource");
+            thread.setDaemon(true);
+            thread.start();
+        }
+
+        @Override
+        public long getNanos(boolean consistentView) {
+            if (consistentView) {
+                lastNanos = clockSource.getAsLong();
+            }
+            return lastNanos;
+        }
+
+        private void updateLoop() {
+            while (!closed && !Thread.currentThread().isInterrupted()) {
+                lastNanos = clockSource.getAsLong();
+                try {
+                    Thread.sleep(sleepMillis, sleepNanos);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            closed = true;
         }
     }
 }
