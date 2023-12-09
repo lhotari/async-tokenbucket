@@ -10,6 +10,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -18,15 +19,25 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class AsyncTokenBucketBenchmark {
     private AsyncTokenBucket asyncTokenBucket;
+    private AsyncTokenBucket.GranularMonotonicClockSource clockSource =
+            new AsyncTokenBucket.GranularMonotonicClockSource(
+                    TimeUnit.MILLISECONDS.toNanos(8),
+                    System::nanoTime);
 
     @Setup(Level.Iteration)
     public void setup() {
         long ratePerSecond = 100_000_000;
         asyncTokenBucket = AsyncTokenBucket.builder()
                 .rate(ratePerSecond)
+                .clockSource(clockSource)
                 .initialTokens(2 * ratePerSecond)
                 .capacity(2 * ratePerSecond)
                 .build();
+    }
+
+    @TearDown(Level.Iteration)
+    public void teardown() {
+        clockSource.close();
     }
 
     @Threads(1)
