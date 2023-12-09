@@ -12,14 +12,16 @@ import java.util.function.LongSupplier;
  * It is eventually consistent, meaning that the tokens are not updated on every call to the "consumeTokens" method.
  * <p>Main usage flow:
  * 1. tokens are consumed by calling the "consumeTokens" method.
- * 2. the "calculateThrottlingDuration" method is called to calculate the duration of a possible needed pause when the tokens
+ * 2. the "calculateThrottlingDuration" method is called to calculate the duration of a possible needed pause when the
+ * tokens
  * are fully consumed.
  * <p>This class does not produce side effects outside of its own scope. It functions similarly to a stateful function,
  * akin to a counter function. In essence, it is a sophisticated counter. It can serve as a foundational component for
  * constructing higher-level asynchronous rate limiter implementations, which require side effects for throttling.
+ * <p>To achieve optimal performance, pass a {@link GranularMonotonicClockSource} as the clock source.
  */
 public abstract class AsyncTokenBucket {
-    public static final MonotonicClockSource DEFAULT_CLOCK_SOURCE = consistentView -> System.nanoTime();
+    public static final MonotonicClockSource DEFAULT_CLOCK_SOURCE = highPrecision -> System.nanoTime();
     private static final long ONE_SECOND_NANOS = TimeUnit.SECONDS.toNanos(1);
     // 2^24 nanoseconds is 16 milliseconds
     private static final long DEFAULT_RESOLUTION_NANOS = TimeUnit.MILLISECONDS.toNanos(16);
@@ -80,7 +82,7 @@ public abstract class AsyncTokenBucket {
      */
     protected final long resolutionNanos;
     /**
-     * This field is used to obtain the current time in nanoseconds. By default, a monotonic clock is used.
+     * This field is used to obtain the current monotonic clock time in nanoseconds.
      */
     private final MonotonicClockSource clockSource;
     /**
@@ -393,10 +395,28 @@ public abstract class AsyncTokenBucket {
         }
     }
 
+    /**
+     * Interface for a clock source that returns a monotonic time in nanoseconds with a required precision.
+     */
     public interface MonotonicClockSource {
-        long getNanos(boolean consistentView);
+        /**
+         * Returns the current monotonic clock time in nanoseconds.
+         *
+         * @param highPrecision if true, the returned value must be a high precision monotonic time in nanoseconds.
+         *                      if false, the returned value can be a granular precision monotonic time in nanoseconds.
+         * @return the current monotonic clock time in nanoseconds
+         */
+        long getNanos(boolean highPrecision);
     }
 
+    /**
+     * A clock source that is optimized for performance by updating the returned low precision monotonic
+     * time in a separate thread with a configurable resolution.
+     * This resolves a performance bottleneck on platforms where calls to System.nanoTime() are relatively
+     * costly. For example, this happens on MacOS with Apple silicon CPUs (M1,M2,M3).
+     * Instantiating this class creates a daemon thread that updates the monotonic time. The close method
+     * should be called to stop the thread.
+     */
     public static class GranularMonotonicClockSource implements MonotonicClockSource, AutoCloseable {
         private final long sleepMillis;
         private final int sleepNanos;
@@ -414,8 +434,8 @@ public abstract class AsyncTokenBucket {
         }
 
         @Override
-        public long getNanos(boolean consistentView) {
-            if (consistentView) {
+        public long getNanos(boolean highPrecision) {
+            if (highPrecision) {
                 lastNanos = clockSource.getAsLong();
             }
             return lastNanos;

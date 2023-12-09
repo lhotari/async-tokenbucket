@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class AsyncTokenBucketTest {
     private final AtomicLong manualClockSource = new AtomicLong(TimeUnit.SECONDS.toNanos(100));
-    private final AsyncTokenBucket.MonotonicClockSource clockSource = consistentView -> manualClockSource.get();
+    private final AsyncTokenBucket.MonotonicClockSource clockSource = highPrecision -> manualClockSource.get();
 
     private AsyncTokenBucket asyncTokenBucket;
 
