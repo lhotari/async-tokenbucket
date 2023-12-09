@@ -428,6 +428,7 @@ public abstract class AsyncTokenBucket {
             this.sleepMillis = TimeUnit.NANOSECONDS.toMillis(granularityNanos);
             this.sleepNanos = (int) (granularityNanos - TimeUnit.MILLISECONDS.toNanos(sleepMillis));
             this.clockSource = clockSource;
+            this.lastNanos = clockSource.getAsLong();
             Thread thread = new Thread(this::updateLoop, "AsyncTokenBucket-DefaultMonotonicClockSource");
             thread.setDaemon(true);
             thread.start();
@@ -436,7 +437,9 @@ public abstract class AsyncTokenBucket {
         @Override
         public long getNanos(boolean highPrecision) {
             if (highPrecision) {
-                lastNanos = clockSource.getAsLong();
+                long currentNanos = clockSource.getAsLong();
+                lastNanos = currentNanos;
+                return currentNanos;
             }
             return lastNanos;
         }
