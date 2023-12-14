@@ -29,7 +29,7 @@ source code:
 unit test:
 [`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java)\
 performance test:
-[`AsyncTokenBucketPerformanceTest.java`](src/performanceTest/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketPerformanceTest.java)
+[`AsyncTokenBucketPerformanceTest.java`](src/performanceTest/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketPerformanceTest.java)\
 JMH benchmark:
 [`AsyncTokenBucketBenchmark.java`](src/jmh/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketBenchmark.java)
 
