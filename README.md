@@ -34,13 +34,13 @@ JMH benchmark:
 [`AsyncTokenBucketBenchmark.java`](src/jmh/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketBenchmark.java)
 
  1. Tokens are consumed by invoking the `consumeTokens` or
-    `consumeTokensAndCheckIfContainsTokens`` methods.
- 2. The `consumeTokensAndCheckIfContainsTokens` or `containsTokens``
+    `consumeTokensAndCheckIfContainsTokens` methods.
+ 2. The `consumeTokensAndCheckIfContainsTokens` or `containsTokens`
     methods return false if there are no tokens available, indicating a
     need for throttling.
  3. In case of throttling, the application should throttle in a way that
  is suitable for the use case and then call the
- `calculateThrottlingDuration`` method to calculate the duration of the
+ `calculateThrottlingDuration` method to calculate the duration of the
  required pause.
  4. After the pause duration, the application should verify if there are
  any available tokens by invoking the `containsTokens` method. If tokens
