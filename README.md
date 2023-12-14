@@ -1,30 +1,66 @@
 # async-tokenbucket
 
-Proof-of-concept example of implementing an asynchronous token bucket that can be used as a building block 
-for rate limiters. This proof-of-concept work is related to improving and replacing the current rate limiter implementation in Pulsar core.
-There's a [related mailing list thread on the dev@pulsar.apache.org mailing list](https://lists.apache.org/thread/13ncst2nc311vxok1s75thl2gtnk7w1t).
+Proof-of-concept example of implementing an asynchronous token bucket
+that can be used as a building block for rate limiters. This
+proof-of-concept work is related to improving and replacing the current
+rate limiter implementation in Pulsar core. There's more information
+about the design in Apache Pulsar in ["PIP-322: Pulsar Rate Limiting
+Refactoring"](https://github.com/apache/pulsar/blob/master/pip/pip-322.md).
 
 ## Why?
 
-This is an asynchronous token bucket algorithm implementation that is optimized for performance with highly concurrent
-use. There is no synchronization or blocking. CAS (compare-and-swap) operations are used and multiple levels of CAS 
-fields are used to minimize contention when using CAS fields. The JVM's LongAdder class is used in the hot path to 
+This is an asynchronous token bucket algorithm implementation that is
+optimized for performance with highly concurrent use. There is no
+synchronization or blocking. CAS (compare-and-swap) operations are used
+and multiple levels of CAS fields are used to minimize contention when
+using CAS fields. The JVM's LongAdder class is used in the hot path to
 hold the sum of consumed tokens.
 
-The performance of the token bucket calculations exceeds over 230M operations per second on a single thread tested on a developer laptop (Apple M3 Max). With 100 threads, the throughput was over 2500M ops/s. This proves that the overhead of the token bucket is well suited for Apache Pulsar's rate limiter use cases.
+The performance of the token bucket calculations exceeds over 230M
+operations per second on a single thread tested on a developer laptop
+(Apple M3 Max). With 100 threads, the throughput was over 2500M ops/s.
+This proves that the overhead of the token bucket is well suited for
+Apache Pulsar's rate limiter use cases.
 
 ### Main usage flow of the AsyncTokenBucket class
 
-source code: [`AsyncTokenBucket.java`](src/main/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucket.java)\
-unit test: [`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java)\
-performance test: [`AsyncTokenBucketPerformanceTest.java`](src/performanceTest/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketPerformanceTest.java)
+source code:
+[`AsyncTokenBucket.java`](src/main/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucket.java)\
+unit test:
+[`AsyncTokenBucketTest.java`](src/test/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketTest.java)\
+performance test:
+[`AsyncTokenBucketPerformanceTest.java`](src/performanceTest/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketPerformanceTest.java)
+JMH benchmark:
+[`AsyncTokenBucketBenchmark.java`](src/jmh/java/com/github/lhotari/asynctokenbucket/AsyncTokenBucketBenchmark.java)
 
-1. tokens are consumed by calling the `consumeTokens` method.
-2. the `calculateThrottlingDuration` method is called to calculate the duration of a possible needed pause when the tokens are fully consumed.
+ 1. Tokens are consumed by invoking the `consumeTokens` or
+    `consumeTokensAndCheckIfContainsTokens`` methods.
+ 2. The `consumeTokensAndCheckIfContainsTokens` or `containsTokens``
+    methods return false if there are no tokens available, indicating a
+    need for throttling.
+ 3. In case of throttling, the application should throttle in a way that
+ is suitable for the use case and then call the
+ `calculateThrottlingDuration`` method to calculate the duration of the
+ required pause.
+ 4. After the pause duration, the application should verify if there are
+ any available tokens by invoking the `containsTokens` method. If tokens
+ are available, the application should cease throttling. However, if
+ tokens are not available, the application should maintain the
+ throttling and recompute the throttling duration. In a concurrent
+ environment, it is advisable to use a throttling queue to ensure fair
+ distribution of resources across throttled connections or clients. Once
+ the throttling duration has elapsed, the application should select the
+ next connection or client from the throttling queue to unthrottle.
+ Before unthrottling, the application should check for available tokens.
+ If tokens are still not available, the application should continue with
+ throttling and repeat the throttling loop.
 
-The `AsyncTokenBucket` class doesn't have side effects, it's like a stateful function, just like a counter function is a stateful function.
-Indeed, it is just a sophisticated counter. It can be used as a building block for implementing higher level asynchronous rate limiter 
-implementations which do need side effects.
+The `AsyncTokenBucket` class does not produce side effects outside of
+its own scope. It functions similarly to a stateful function, akin to a
+counter function. In essence, it is a sophisticated counter. It can
+serve as a foundational component for constructing higher-level
+asynchronous rate limiter implementations, which require side effects
+for throttling.
 
 ### Running the performance test
 
@@ -72,4 +108,10 @@ AsyncTokenBucketPerformanceTest > shouldPerformanceOfConsumeTokensBeSufficient(i
 
 BUILD SUCCESSFUL in 1m
 4 actionable tasks: 1 executed, 3 up-to-date
+```
+
+There's also a JMH benchmark that validates the results with JMH.
+
+```
+./gradlew jmh
 ```
